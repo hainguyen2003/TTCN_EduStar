@@ -2,6 +2,7 @@ package com.example.ttcn2etest.security;
 
 import com.example.ttcn2etest.config.CorsConfigFilter;
 import com.example.ttcn2etest.service.auth.JwtTokenProvider;
+import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -75,13 +76,14 @@ public class WebSecurityConfig {
                 .requestMatchers("/user/forgot/password").permitAll()
                 .requestMatchers("/consulting/registration").permitAll()
                 .requestMatchers("consulting/registration").permitAll()
-                .requestMatchers("/course/registrationn").permitAll()
-                .requestMatchers("course/registrationn").permitAll()
-//                .requestMatchers("/course/information").permitAll()
-//                .requestMatchers("course/information").permitAll()
+                .requestMatchers("/order/direct-payment").permitAll()
+                .requestMatchers("/order/online-payment").permitAll()
+                .requestMatchers("/api/paymentVNPAY/vn-pay").permitAll()
+                .requestMatchers("/api/paymentVNPAY/vn-pay-callback").permitAll()
+                .requestMatchers("/api/payment-online/**").permitAll() // Bỏ xác thực cho endpoint này
                 .requestMatchers(request -> {
                     if (request.getMethod().equals(HttpMethod.GET.toString())) {
-                        return new RegexRequestMatcher("/(document|news|admissions|slide|service|display|exam/schedule|...)/(all|\\d+)", null).matches(request);
+                        return new RegexRequestMatcher("/(document|news|slide|service|display|exam/schedule|...)/(all|\\d+)", null).matches(request);
                     }
                     return false;
                 }).permitAll()
@@ -89,35 +91,10 @@ public class WebSecurityConfig {
 //                .anyRequest().permitAll();
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(corsConfigFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore((Filter) corsConfigFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf().disable()
-//                .exceptionHandling()
-//                .authenticationEntryPoint(unauthorizedHandler)
-//                .and()
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and()
-//                .authorizeHttpRequests()
-//                // Các endpoint công khai (không yêu cầu xác thực)
-//                .requestMatchers("/auth/**", "/client/**", "/user/auth/**", "/file/**", "/user/forgot/password", "/consulting/registration").permitAll()
-//                .requestMatchers(HttpMethod.GET, "/course/information/**").permitAll() // Công khai các GET request
-//                .requestMatchers(HttpMethod.GET, "/admissions/all", "/admissions/{id}").permitAll() // Công khai GET cho admissions
-//                .requestMatchers(HttpMethod.GET, "/document/**", "/news/**", "/slide/**", "/service/**", "/display/**", "/exam/schedule/**").permitAll() // Công khai GET khác
-//                // Các endpoint cần xác thực
-//                .requestMatchers("/admissions/**", "/course/information/**").authenticated()
-//                // Các endpoint còn lại
-//                .anyRequest().authenticated();
-//
-//        http.authenticationProvider(authenticationProvider());
-//        http.addFilterBefore(corsConfigFilter, UsernamePasswordAuthenticationFilter.class);
-//        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
-//    }
 
 
 }

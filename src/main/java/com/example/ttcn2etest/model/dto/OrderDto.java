@@ -3,9 +3,14 @@ package com.example.ttcn2etest.model.dto;
 import com.example.ttcn2etest.model.etity.Order;
 import com.example.ttcn2etest.model.etity.Service;
 import com.example.ttcn2etest.model.etity.User;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -14,19 +19,21 @@ import java.time.Instant;
 /**
  * DTO for {@link com.example.ttcn2etest.model.etity.Order}
  */
-@Value
-public class OrderDto extends @NotNull Order implements Serializable {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class OrderDto {
     Long id;
-    @NotNull
     User user;
-    @NotNull
     Service serviceManager;
-    @NotNull
-    BigDecimal amount;
-    @NotNull
-    @Size(max = 50)
+    String amount;
     String paymentMethod;
     String status;
     Instant paymentDate;
     Instant updatedAt;
+    String  image;
+    String email;
+    String fullName;
+    String phone;
+    String address;
 }

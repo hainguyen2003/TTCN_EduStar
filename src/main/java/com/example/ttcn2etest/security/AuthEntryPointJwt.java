@@ -26,5 +26,11 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(responseStream, baseResponse);
         responseStream.flush();
+        if (!response.isCommitted()) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
+        } else {
+            // Log thêm để debug
+            System.err.println("Response đã được commit. Không thể gửi lỗi.");
+        }
     }
 }
