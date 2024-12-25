@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
 
@@ -23,18 +22,10 @@ public class BaseResponse {
         this.statusCode = 200;
     }
 
-    public static <T> ResponseEntity<?> success(T data){
-        BaseItemResponse<T> response=new BaseItemResponse<>();
-        response.setSuccess(data);
-        return ResponseEntity.ok(response);
-    }
-
-
     public void setFailed(int code, String message) {
         this.success = false;
         error = new ErrorResponse();
         error.setMessage(message);
         error.setStatusCode(code);
     }
-
 }
