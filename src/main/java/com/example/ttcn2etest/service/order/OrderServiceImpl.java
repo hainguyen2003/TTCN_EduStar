@@ -1,12 +1,11 @@
 package com.example.ttcn2etest.service.order;
 
-import com.example.ttcn2etest.constant.Constant;
 import com.example.ttcn2etest.controller.OrderController;
 import com.example.ttcn2etest.exception.MyCustomException;
 import com.example.ttcn2etest.model.dto.OrderDto;
-import com.example.ttcn2etest.model.dto.PaymentRequestDTO;
 import com.example.ttcn2etest.model.etity.Order;
 import com.example.ttcn2etest.repository.order.OrderRepository;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Base64;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -47,14 +44,45 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDto getOrderById(long orderId) {
-        Optional<Order> order = orderRepository.findById(orderId);
-        if (order.isPresent()){
+    public List<OrderDto> getPaidUsers() {
+        List<Order> paidOrders = orderRepository.findByStatus("PAID");
+        return paidOrders.stream()
+                .map(order -> modelMapper.map(order, OrderDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrderDto> getPaidOrdersByUserId(long userId) {
+        return orderRepository.findPaidOrdersByUserId(userId).stream()
+                .map(order -> {
+                    // Sử dụng getter để chắc chắn các đối tượng liên kết được tải
+                    order.getUserId();
+                    order.getServiceManagerId();
+                    OrderDto orderDto = modelMapper.map(order, OrderDto.class);
+                    return orderDto;
+                }).toList();
+    }
+
+    @Override
+    public OrderDto getOrderById(Long id) {
+        Optional<Order> order = orderRepository.findById(id);
+        if(order.isPresent()) {
             return modelMapper.map(order.get(), OrderDto.class);
         }else {
             throw new MyCustomException("ID của dịch vụ không tồn tại trong hệ thống!");
         }
     }
+
+    @Override
+    public OrderDto getOrderByOrderId(String id) {
+        Optional<Order> order = orderRepository.findOrderByOrderId(id);
+        if(order.isPresent()) {
+            return modelMapper.map(order.get(), OrderDto.class);
+        }else {
+            throw new MyCustomException("ID của dịch vụ không tồn tại trong hệ thống!");
+        }
+    }
+
 
     @Override
     public OrderDto addOrder(OrderDto orderDto, String paymentCode, String imagePath) {
@@ -68,16 +96,19 @@ public class OrderServiceImpl implements OrderService {
         } else if ("ONLINE_PAYMENT".equals(paymentCode)) {
             paymentMethod = "ONLINE_PAYMENT";
             finalImagePath = (imagePath != null) ? imagePath : "Không có hình ảnh"; // Nếu không có ảnh, đặt giá trị mặc định
+        }else if ("VNPAY_PAYMENT".equals(paymentCode)) {
+            paymentMethod = "VNPAY_PAYMENT";
+            finalImagePath = "Không có"; // Nếu là thanh toán trực tiếp, không có hình ảnh
         } else {
             throw new IllegalArgumentException("Invalid payment method code: " + paymentCode);
         }
 
         // Tạo đối tượng Order từ DTO
         Order order = Order.builder()
-                .user(orderDto.getUser())
+                .userId(orderDto.getUserId())
                 .amount(orderDto.getAmount())
-                .orderId(generateOrderId())
-                .serviceManager(orderDto.getServiceManager())
+                .orderId(orderDto.getOrderId())
+                .serviceManagerId(orderDto.getServiceManagerId())
                 .paymentMethod(paymentMethod)
                 .status("PENDING")
                 .paymentDate(Instant.now())
@@ -116,21 +147,35 @@ public class OrderServiceImpl implements OrderService {
         return "/" + fileName; // Trả về đường dẫn tương đối để lưu vào cơ sở dữ liệu
     }
 
-
+    @Override
+    public OrderDto updateOrderStatus(Long id, String status, Long amount, String paymentDate) {
+        Optional<Order> optionalOrder = orderRepository.findById(id);
+        if (optionalOrder.isPresent()) {
+            Order order = optionalOrder.get();
+            order.setStatus(status); // Cập nhật trạng thái
+            order.setPaymentDate(Instant.now()); // Thời gian thanh toán
+            orderRepository.save(order); // Lưu lại thay đổi
+            return modelMapper.map(order, OrderDto.class);
+        } else {
+            throw new MyCustomException("Không tìm thấy đơn hàng với ID: " + id);
+        }
+    }
 
     @Override
-    public OrderDto updateOrderStatus(OrderDto orderDto, Long orderId) {
-        Optional<Order> orderOptional = orderRepository.findById(orderId);
-        if (orderOptional.isEmpty()) {
-            throw new RuntimeException("Order not found with ID: " + orderId);
+    @Transactional
+    public void updateOrderStatus(Long orderId, String status) throws Exception {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new Exception("Không tìm thấy đơn hàng với ID: " + orderId));
+
+        if (!status.equals("PAID") && !status.equals("FAILED")) {
+            throw new Exception("Trạng thái không hợp lệ! Chỉ chấp nhận: PAID, FAILED");
         }
-        Order order = orderOptional.get();
 
-        return null;
+        if (!order.getStatus().equals("PENDING")) {
+            throw new Exception("Chỉ có thể cập nhật trạng thái cho đơn hàng đang chờ xử lý (PENDING)");
+        }
+
+        order.setStatus(status);
+        orderRepository.save(order);
     }
-
-    private String generateOrderId() {
-        return "ORDER-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
 }

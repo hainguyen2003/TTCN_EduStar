@@ -8,8 +8,14 @@ import java.util.List;
 
 public interface OrderService {
     List<OrderDto> getAllOrder();
+    List<OrderDto> getPaidUsers();
 
-    OrderDto getOrderById(long orderId);
+    List<OrderDto> getPaidOrdersByUserId(long userId);
+
+    // get order by id
+
+    OrderDto getOrderById(Long id);
+    OrderDto getOrderByOrderId(String id);
 
 
     // add Order
@@ -21,5 +27,8 @@ public interface OrderService {
 
 
     // update Order
-    OrderDto updateOrderStatus(OrderDto orderDto,Long orderId);
+    OrderDto updateOrderStatus(Long id, String status, Long amount, String paymentDate);
+    void updateOrderStatus(Long orderId, String status) throws Exception;
+
+
 }

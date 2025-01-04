@@ -58,7 +58,8 @@ public class Service {
 
     @Column(name = "course_price", precision = 10, scale = 2)
     private BigDecimal coursePrice;
-    @Size(max = 100)
+
+    @Column(name = "price")
     private String price;
     @Column(name = "request_students")
     private String requestStudents;
