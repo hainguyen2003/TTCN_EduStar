@@ -21,10 +21,10 @@ public class RegisterRequest {
     private String username;
     @NotBlank(message = "Mật khẩu không được để trống!")
     @Size(min = 6, max = 20, message = "Mật khẩu phải có ít nhất 6, nhiều nhất 20 kí tự!")
-    @PasswordAnnotation
+   // @PasswordAnnotation
     private String password;
     @NotBlank(message = "Số điện thoại không được để trống!")
-    @PhoneNumber
+    //@PhoneNumber
     private String phone;
     @NotBlank(message = "Email không được để trống!")
     @EmailAnnotation

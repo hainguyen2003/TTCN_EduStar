@@ -1,1 +1,0 @@
-# TTCN_EduStar

@@ -25,17 +25,4 @@ public class MyUtils {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
         return simpleDateFormat.format(inputDate);
     }
-
-    public static String getPathInfoFromServletPath(String path) {
-        if (path == null || path.isEmpty()) {
-            return ""; // Hoặc có thể ném một ngoại lệ
-        }
-
-        String[] result = path.split("/");
-        if (result.length == 0) {
-            return "";
-        }
-
-        return result[result.length - 1];
-    }
 }

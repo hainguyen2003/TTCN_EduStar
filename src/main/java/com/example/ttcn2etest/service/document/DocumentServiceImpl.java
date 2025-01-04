@@ -49,11 +49,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<Document> getDocumentsByServiceId(Long idService) {
-        return documentRepository.findByIdService(idService);
-    }
-
-    @Override
     @Transactional
     public DocumentDTO createDocument(CreateDocumentRequest request) {
         try {
