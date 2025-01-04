@@ -24,8 +24,9 @@ import java.time.Instant;
 @NoArgsConstructor
 public class OrderDto {
     Long id;
-    User user;
-    Service serviceManager;
+    String orderId;
+    Long userId;
+    Long serviceManagerId;
     String amount;
     String paymentMethod;
     String status;

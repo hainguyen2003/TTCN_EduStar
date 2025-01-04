@@ -24,10 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/order")
 @CrossOrigin(origins = "http://localhost:3000")
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
-        maxFileSize = 1024 * 1024 * 10, // 10MB
-        maxRequestSize = 1024 * 1024 * 20 // 20MB
-)
+
 public class OrderController extends BaseController {
     private final OrderService orderService;
     private final ModelMapper modelMapper;
@@ -54,6 +51,23 @@ public class OrderController extends BaseController {
         OrderDto response = orderService.getOrderById(id);
         return buildItemResponse(response);
     }
+    @GetMapping("/orderId/{id}")
+    ResponseEntity<?> getByOrderId(@PathVariable String id) {
+        OrderDto response = orderService.getOrderByOrderId(id);
+        return buildItemResponse(response);
+    }
+
+    @GetMapping("/paid/{userId}")
+    public ResponseEntity<List<OrderDto>> getPaidOrdersByUserId(@PathVariable Long userId) {
+        List<OrderDto> orders = orderService.getPaidOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/paid")
+    public ResponseEntity<List<OrderDto>> getPaidUsers() {
+        List<OrderDto> paidUsers = orderService.getPaidUsers();
+        return ResponseEntity.ok(paidUsers);
+    }
 
     @PostMapping("/direct-payment")
     public ResponseEntity<?> directPayment(@Validated @RequestBody OrderDto orderDto) {
@@ -75,30 +89,15 @@ public class OrderController extends BaseController {
             ));
         }
     }
-
-
-    @PostMapping("/online-payment")
-    public ResponseEntity<?> onlinePayment(
-            @RequestParam("order") @Validated OrderDto orderDto,
-            @RequestParam("file") MultipartFile file) {
+    @PostMapping("/{orderId}/update-status")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam String status) {
         try {
-            // Tạo tên file
-            String fileName = "payment_" + orderDto.getId() + "_" + Instant.now().getEpochSecond() + ".jpg";
-
-            // Lưu hình ảnh
-            String imagePath = orderService.saveImage(file, fileName);
-
-            // Lưu thông tin đơn hàng vào database với paymentCode = "ONLINE_PAYMENT"
-            OrderDto response = orderService.addOrder(orderDto, "ONLINE_PAYMENT", imagePath);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", ex.getMessage(),
-                    "statusCode", HttpStatus.BAD_REQUEST.value(),
-                    "timestamp", Instant.now()
-            ));
+            orderService.updateOrderStatus(orderId, status);
+            return ResponseEntity.ok("Cập nhật trạng thái đơn hàng thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
         }
     }
 }
