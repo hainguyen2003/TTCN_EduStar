@@ -18,7 +18,6 @@ public class BaseItemResponse<T> extends BaseResponse {
         this.data = data;
     }
 
-
     public void setSuccess(T data) {
         super.setSuccess();
         this.data = data;
