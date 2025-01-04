@@ -47,12 +47,6 @@ public class DocumentController extends BaseController {
         return buildItemResponse(response);
     }
 
-    @GetMapping("/service/{idService}")
-    public ResponseEntity<?> getDocumentsByServiceId(@PathVariable Long idService) {
-        List<Document> documents = documentService.getDocumentsByServiceId(idService);
-        return buildListItemResponse(documents,documents.size());
-    }
-
 
     @PostMapping("")
     @PreAuthorize("hasAnyAuthority('ADMIN','STAFF')")

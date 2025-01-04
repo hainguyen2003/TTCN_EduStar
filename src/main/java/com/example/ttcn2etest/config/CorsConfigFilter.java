@@ -17,14 +17,6 @@ public class CorsConfigFilter implements Filter {
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "*");
-
-        // Xử lý các yêu cầu preflight
-        if ("OPTIONS".equalsIgnoreCase(((jakarta.servlet.http.HttpServletRequest) servletRequest).getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return; // Kết thúc nếu là yêu cầu preflight
-        }
-
-        // Tiếp tục xử lý các yêu cầu khác
         chain.doFilter(servletRequest, servletResponse);
     }
 }

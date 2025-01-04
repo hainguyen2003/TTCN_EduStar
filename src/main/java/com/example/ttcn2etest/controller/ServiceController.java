@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/service")
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép kết nối từ frontend
 public class ServiceController extends BaseController {
     private final StudyService studyService;
     private final ModelMapper modelMapper;
